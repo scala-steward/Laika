@@ -17,6 +17,7 @@
 package laika.parse.core.text
 
 import laika.parse.core._
+import laika.util.stats.Counter
 
 /**
   * A parser that matches a literal string.
@@ -24,7 +25,7 @@ import laika.parse.core._
   * @author Jens Halm
   */
 case class Literal (expected: String) extends Parser[String] {
-
+  Counter.Literal.NewInstance.inc()
   val msgProvider = MessageProvider { context =>
     val toCapture = Math.min(context.remaining, expected.length)
     val found = context.capture(toCapture)
@@ -32,6 +33,7 @@ case class Literal (expected: String) extends Parser[String] {
   }
 
   def apply (in: ParserContext) = {
+    Counter.Literal.Invoke.inc()
     val source = in.input
     val start = in.offset
     var i = 0
@@ -40,7 +42,7 @@ case class Literal (expected: String) extends Parser[String] {
       i += 1
       j += 1
     }
-    if (i == expected.length) Success(expected, in.consume(i))
+    if (i == expected.length) {Counter.Literal.Read.inc(i); Success(expected, in.consume(i))}
     else Failure(msgProvider, in)
   }
 

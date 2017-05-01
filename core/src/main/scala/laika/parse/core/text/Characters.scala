@@ -17,6 +17,7 @@
 package laika.parse.core.text
 
 import laika.parse.core._
+import laika.util.stats.Counter
 
 import scala.annotation.tailrec
 
@@ -26,7 +27,7 @@ import scala.annotation.tailrec
 class Characters (predicate: Char => Boolean,
                   minChar:   Int = 0,
                   maxChar:   Int = 0) extends Parser[String] {
-
+  Counter.Characters.NewInstance.inc()
   /** Creates and returns a new parser that fails if it does not consume the specified minimum number
     *  of characters. It may still consume more characters in case of further matches.
     */
@@ -50,13 +51,14 @@ class Characters (predicate: Char => Boolean,
 
 
   def apply (ctx: ParserContext): ParseResult[String] = {
-
+    Counter.Characters.Invoke.inc()
     val source = ctx.input
     val maxOffset = if (maxChar <= 0 || ctx.offset + maxChar < 0) source.length
                     else Math.min(ctx.offset + maxChar, source.length)
 
     def result (offset: Int) = {
       val consumed = offset - ctx.offset
+      Counter.Characters.read(consumed)
       if (consumed >= minChar)
         Success(source.substring(ctx.offset, offset), ctx.consume(consumed))
       else

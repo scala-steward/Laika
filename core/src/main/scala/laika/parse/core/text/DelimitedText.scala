@@ -17,6 +17,7 @@
 package laika.parse.core.text
 
 import laika.parse.core._
+import laika.util.stats.Counter
 
 import scala.annotation.tailrec
 
@@ -24,7 +25,7 @@ import scala.annotation.tailrec
   * @author Jens Halm
   */
 class DelimitedText[T] (val delimiter: Delimiter[T]) extends Parser[T] {
-
+  Counter.DelimitedText.NewInstance.inc()
 
   private val maxChar: Char = if (delimiter.startChars.nonEmpty) delimiter.startChars.max else 0
 
@@ -39,7 +40,7 @@ class DelimitedText[T] (val delimiter: Delimiter[T]) extends Parser[T] {
 
 
   def apply (ctx: ParserContext): ParseResult[T] = {
-
+    Counter.DelimitedText.Invoke.inc()
     val source = ctx.input
     val end = source.length
     val lookup = optimizedDelimiters
@@ -53,7 +54,7 @@ class DelimitedText[T] (val delimiter: Delimiter[T]) extends Parser[T] {
       else {
         val char = source.charAt(offset)
         if (char <= maxChar && lookup(char) == 1) delimiter.atStartChar(char, charsConsumed, ctx) match {
-          case Complete(result) => result
+          case Complete(result) => Counter.DelimitedText.read(delimiter.startChars.size).inc(charsConsumed); result
           case Continue         => parse(offset + 1)
         }
         else parse(offset + 1)
@@ -87,7 +88,7 @@ case class ConfigurableDelimiter (endDelimiters: Set[Char],
   private val EmptyResult = Message(s"expected at least 1 character before end delimiter")
 
   def atStartChar (startChar: Char, charsConsumed: Int, context: ParserContext): DelimiterResult[String] = {
-
+    Counter.DelimitedText.AtStartChar.inc()
     def unexpectedInput (char: Char)
       = new MessageFunction(char, (_: Char) => s"unexpected input in delimited text: `$char`")
 
@@ -105,6 +106,7 @@ case class ConfigurableDelimiter (endDelimiters: Set[Char],
   }
 
   def atEOF (charsConsumed: Int, context: ParserContext): ParseResult[String] = {
+    Counter.DelimitedText.AtEof.inc()
     if (!acceptEOF) Failure(Message.UnexpectedEOF, context)
     else if (charsConsumed == 0 && nonEmpty) Failure(EmptyResult, context)
     else Success(context.capture(charsConsumed), context.consume(charsConsumed))

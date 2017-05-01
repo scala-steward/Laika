@@ -9,6 +9,7 @@
 package laika.parse.core
 
 import laika.parse.core.text.Literal
+import laika.util.stats.Counter
 
 import scala.annotation.tailrec
 import scala.collection.mutable.ListBuffer
@@ -69,7 +70,17 @@ trait Parsers {
     *  @param e the `Elem` that must be the next piece of input for the returned parser to succeed
     *  @return a `Parser` that succeeds if `e` is the next available input (and returns it).
     */
-  implicit def char(e: Char): Parser[Char] = acceptIf(_ == e)("'"+e+"' expected but " + _ + " found")
+  implicit def char(e: Char): Parser[Char] = {
+    Counter.OneChar.NewInstance.inc()
+    acceptOneChar(_ == e)("'"+e+"' expected but " + _ + " found")
+  }
+
+  private def acceptOneChar(p: Char => Boolean)(err: Char => String): Parser[Char] = Parser { in =>
+    Counter.OneChar.Read.inc()
+    if (in.atEnd) Failure(Message.UnexpectedEOF, in)
+    else if (p(in.char)) Success(in.char, in.consume(1))
+    else Failure(new MessageFunction(in.char, err), in) // TODO - avoid object creation
+  }
 
   /** A parser matching input elements that satisfy a given predicate.
    *
@@ -80,6 +91,7 @@ trait Parsers {
    *  @return        A parser for elements satisfying p(e).
    */
   def acceptIf(p: Char => Boolean)(err: Char => String): Parser[Char] = Parser { in =>
+    Counter.OneChar.RstMarkup.inc()
     if (in.atEnd) Failure(Message.UnexpectedEOF, in)
     else if (p(in.char)) Success(in.char, in.consume(1))
     else Failure(new MessageFunction(in.char, err), in) // TODO - avoid object creation

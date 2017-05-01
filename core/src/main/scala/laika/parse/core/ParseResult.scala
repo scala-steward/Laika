@@ -1,5 +1,7 @@
 package laika.parse.core
 
+import laika.util.stats.Counter
+
 /** A base class for parser results. A result is either successful or not
   *  (failure may be fatal, i.e., an Error, or not, i.e., a Failure). On
   *  success, provides a result of type `T` which consists of some result
@@ -48,7 +50,7 @@ sealed abstract class ParseResult[+T] {
   *  @param next   The parser's remaining input
   */
 case class Success[+T](result: T, next: ParserContext) extends ParseResult[T] {
-
+  Counter.NewInstance.Success.inc()
   def map[U](f: T => U) = Success(f(result), next)
 
   def mapPartial[U](f: PartialFunction[T, U], error: T => String): ParseResult[U] =
@@ -77,7 +79,7 @@ case class Success[+T](result: T, next: ParserContext) extends ParseResult[T] {
   *  @param next         The parser's unconsumed input at the point where the failure occurred.
   */
 case class Failure(msgProvider: MessageProvider, next: ParserContext) extends ParseResult[Nothing] {
-
+  Counter.NewInstance.Failure.inc()
   lazy val message = msgProvider.message(next)
 
   val successful = false

@@ -16,13 +16,15 @@
 
 package laika.parse.core
 
+import laika.util.stats.Counter
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
   * @author Jens Halm
   */
 case class ParserContext (source: Source, offset: Int, nestLevel: Int) {
-
+  Counter.NewInstance.ParserContext.inc()
   val input: String = source.value
 
   /**  Indicates whether this contexts offset is behind

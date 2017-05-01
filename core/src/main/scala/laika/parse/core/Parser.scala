@@ -1,11 +1,15 @@
 package laika.parse.core
 
+import laika.util.stats.Counter
+
 /** The root class of parsers.
   *  Parsers are functions from the Input type to ParseResult.
   */
 abstract class Parser[+T] extends (ParserContext => ParseResult[T]) {
 
   import Parsers._
+
+  Counter.NewInstance.Parser.inc()
 
   private var name: String = ""
   def named(n: String): this.type = {name=n; this}
