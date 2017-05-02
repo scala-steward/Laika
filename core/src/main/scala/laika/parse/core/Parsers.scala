@@ -275,5 +275,13 @@ object Parsers extends Parsers
   *  }}}
   */
 case class ~[+a, +b](_1: a, _2: b) {
+
+  def size (v: Any): Int = v match {
+    case nested: ~[_, _] => size(nested._1) + size(nested._2)
+    case _ => 1
+  }
+
+  Counter.NewInstance.result(size(this))
+
   override def toString = "("+ _1 +"~"+ _2 +")"
 }

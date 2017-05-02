@@ -46,12 +46,27 @@ object Counter {
     val ParserContext = new Counter("ParserContext")
     val Success = new Counter("Success")
     val Failure = new Counter("Failure")
+    val Result2 = new Counter("~ 2")
+    val Result3 = new Counter("~ 3")
+    val Result4 = new Counter("~ 4")
+    val ResultMore = new Counter("~ More")
+
+    def result (arity: Int): Unit = {
+      if (arity == 2) Result2.inc()
+      else if (arity == 3) Result3.inc()
+      else if (arity == 4) Result4.inc()
+      else ResultMore.inc()
+    }
 
     val Group = CounterGroup("New Instance", Seq(
       Parser,
       ParserContext,
       Success,
-      Failure
+      Failure,
+      Result2,
+      Result3,
+      Result4,
+      ResultMore
     ))
   }
 
