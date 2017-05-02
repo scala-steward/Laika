@@ -79,78 +79,31 @@ trait MarkupParsers extends BaseParsers {
     }
   }
 
-  /** Returns an optimized, Array-based lookup function
-   *  for the specified characters.
-   */
-  protected def optimizedCharLookup (chars: Char*): Char => Boolean = {
-    val max = chars.max
-    val lookup = new Array[Int](max + 1)
-    
-    for (c <- chars) lookup(c) = 1
-    
-    c:Char => c <= max && lookup(c) == 1
-  }
-  
-  /** Returns an optimized, Array-based lookup function 
-   *  for the specified ranges of characters.
-   */
-  protected def optimizedRangeLookup (ranges: Traversable[Char]*): Char => Boolean = {
-    val max = ranges map (_.max) max
-    val lookup = new Array[Int](max + 1)
-    
-    for (r <- ranges; c <- r) lookup(c) = 1
-    
-    c:Char => c <= max && lookup(c) == 1
-  }
-  
-  private def charLookupFor (chars: Char*): Char => Boolean = {
-    chars.length match {
-      case 0 => c => false
-      case 1 => val c = chars(0); _ == c
-      case 2 => val c1 = chars(0); val c2 = chars(1); c => c == c1 || c == c2
-      case _ => optimizedCharLookup(chars:_*)
-    } 
-  }
-  
   /** Consumes any kind of input, always succeeds.
    *  This parser would consume the entire input unless a `max` constraint
    *  is specified.
    */
-  val any: Characters = new Characters(_ => true)
+  val any: Characters = Characters.anyWhile(_ => true)
   
   /** Consumes any number of consecutive occurrences of the specified characters.
    *  Always succeeds unless a minimum number of required matches is specified.
    */
-  def anyOf (chars: Char*): Characters = new Characters(charLookupFor(chars:_*))
+  def anyOf (chars: Char*): Characters = Characters.include(chars)
   
   /** Consumes any number of consecutive characters that are not one of the specified characters.
    *  Always succeeds unless a minimum number of required matches is specified.
    */
-  def anyBut (chars: Char*): Characters = {
-    val p: Char => Boolean = chars.length match {
-      case 0 => c => true
-      case 1 => val c = chars(0); _ != c
-      case 2 => val c1 = chars(0); val c2 = chars(1); c => c != c1 && c != c2
-      case _ => val lookup = optimizedCharLookup(chars:_*); !lookup(_)
-    }
-    new Characters(p)
-  }
+  def anyBut (chars: Char*): Characters = Characters.exclude(chars)
   
   /** Consumes any number of consecutive characters that are in one of the specified character ranges.
    *  Always succeeds unless a minimum number of required matches is specified.
    */
-  def anyIn (ranges: Traversable[Char]*): Characters = {
-    val p: Char => Boolean = {
-      if (ranges.isEmpty) c => false
-      else optimizedRangeLookup(ranges:_*)
-    }
-    new Characters(p)
-  }
+  def anyIn (ranges: Traversable[Char]*): Characters = Characters.include(ranges.flatten)
 
   /** Consumes any number of consecutive characters which satisfy the specified predicate.
     *  Always succeeds unless a minimum number of required matches is specified.
     */
-  def anyWhile (p: Char => Boolean): Characters = new Characters(p)
+  def anyWhile (p: Char => Boolean): Characters = Characters.anyWhile(p)
 
   /** Fully parses the specified input string and returns the result.
    *  This function is expected to always succeed, errors would be considered a bug

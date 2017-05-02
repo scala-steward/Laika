@@ -40,13 +40,13 @@ abstract class Parser[+T] extends (ParserContext => ParseResult[T]) {
     *
     * `p ~ q` succeeds if `p` succeeds and `q` succeeds on the input left over by `p`.
     *
-    * @param q a parser that will be executed after `p` (this parser)
+    * @param p a parser that will be executed after `p` (this parser)
     *          succeeds -- evaluated at most once, and only when necessary.
     * @return a `Parser` that -- on success -- returns a `~` (like a `Pair`,
     *         but easier to pattern match on) that contains the result of `p` and
     *         that of `q`. The resulting parser fails if either `p` or `q` fails.
     */
-  def ~ [U](q: => Parser[U]): Parser[~[T, U]] = { lazy val p = q // lazy argument
+  def ~ [U](p: Parser[U]): Parser[~[T, U]] = {
     (for(a <- this; b <- p) yield new ~(a,b)).named("~")
   }
 
@@ -54,11 +54,11 @@ abstract class Parser[+T] extends (ParserContext => ParseResult[T]) {
     *
     * `p ~> q` succeeds if `p` succeeds and `q` succeeds on the input left over by `p`.
     *
-    * @param q a parser that will be executed after `p` (this parser)
+    * @param p a parser that will be executed after `p` (this parser)
     *        succeeds -- evaluated at most once, and only when necessary.
     * @return a `Parser` that -- on success -- returns the result of `q`.
     */
-  def ~> [U](q: => Parser[U]): Parser[U] = { lazy val p = q // lazy argument
+  def ~> [U](p: Parser[U]): Parser[U] = {
     (for(a <- this; b <- p) yield b).named("~>")
   }
 
@@ -69,10 +69,10 @@ abstract class Parser[+T] extends (ParserContext => ParseResult[T]) {
     *
     * @note <~ has lower operator precedence than ~ or ~>.
     *
-    * @param q a parser that will be executed after `p` (this parser) succeeds -- evaluated at most once, and only when necessary
+    * @param p a parser that will be executed after `p` (this parser) succeeds -- evaluated at most once, and only when necessary
     * @return a `Parser` that -- on success -- returns the result of `p`.
     */
-  def <~ [U](q: => Parser[U]): Parser[T] = { lazy val p = q // lazy argument
+  def <~ [U](p: Parser[U]): Parser[T] = {
     (for(a <- this; b <- p) yield a).named("<~")
   }
 
