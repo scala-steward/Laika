@@ -46,10 +46,10 @@ object Counter {
     val ParserContext = new Counter("ParserContext")
     val Success = new Counter("Success")
     val Failure = new Counter("Failure")
-    val Result2 = new Counter("~ 2")
-    val Result3 = new Counter("~ 3")
-    val Result4 = new Counter("~ 4")
-    val ResultMore = new Counter("~ More")
+    private val Result2 = new Counter("~ 2")
+    private val Result3 = new Counter("~ 3")
+    private val Result4 = new Counter("~ 4")
+    private val ResultMore = new Counter("~ More")
 
     def result (arity: Int): Unit = {
       if (arity == 2) Result2.inc()
@@ -100,6 +100,18 @@ object Counter {
   object Characters {
 
     val NewInstance = new Counter("New Instance")
+    private val NewInstance0 = new Counter("New Instance 0 chars")
+    private val NewInstance1 = new Counter("New Instance 1 chars")
+    private val NewInstance2 = new Counter("New Instance 2 chars")
+    private val NewInstanceMore = new Counter("New Instance More chars")
+
+    def newInstance (numChars: Int): Unit = {
+      if (numChars == 0) NewInstance0.inc()
+      else if (numChars == 1) NewInstance1.inc()
+      else if (numChars == 2) NewInstance2.inc()
+      else NewInstanceMore.inc()
+    }
+
     val Invoke = new Counter("Invoke")
 
     private val ReadTotal = new Counter("Read Total")
@@ -116,6 +128,10 @@ object Counter {
 
     val Group = CounterGroup("Characters", Seq(
       NewInstance,
+      NewInstance0,
+      NewInstance1,
+      NewInstance2,
+      NewInstanceMore,
       Invoke,
       ReadTotal,
       Read0,

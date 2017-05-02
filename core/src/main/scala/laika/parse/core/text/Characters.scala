@@ -92,15 +92,19 @@ object Characters {
   def include (chars: Seq[Char]): Characters = {
     val p: Char => Boolean = chars.length match {
       case 0 =>
+        Counter.Characters.newInstance(0)
         c => false
       case 1 =>
+        Counter.Characters.newInstance(1)
         val c = chars(0)
         _ == c
       case 2 =>
+        Counter.Characters.newInstance(2)
         val c1 = chars(0)
         val c2 = chars(1)
         c => c == c1 || c == c2
       case _ =>
+        Counter.Characters.newInstance(3)
         val lookup = optimizedLookup(chars)
         val max = lookup.length - 1
         c:Char => c <= max && lookup(c) == 1
@@ -111,15 +115,19 @@ object Characters {
   def exclude (chars: Seq[Char]): Characters = {
     val p: Char => Boolean = chars.length match {
       case 0 =>
+        Counter.Characters.newInstance(0)
         c => true
       case 1 =>
+        Counter.Characters.newInstance(1)
         val c = chars(0)
         _ != c
       case 2 =>
+        Counter.Characters.newInstance(2)
         val c1 = chars(0)
         val c2 = chars(1)
         c => c != c1 && c != c2
       case _ =>
+        Counter.Characters.newInstance(3)
         val lookup = optimizedLookup(chars)
         val max = lookup.length - 1
         c:Char => c > max || lookup(c) == 0
