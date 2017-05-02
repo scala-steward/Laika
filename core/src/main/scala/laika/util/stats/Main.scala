@@ -13,9 +13,9 @@ object Main extends App {
 
 
   val inputs = Seq(
-    Input(Markdown, "Markdown Spec - Syntax", "Markdown-Syntax.md"),
-    Input(Markdown, "All Markup", "All-Markup.md"),
-    Input(ReStructuredText, "reStructuredText Spec", "rst-spec.rst")
+    Input(Markdown, "Markdown Spec - Syntax", "Markdown-Syntax.md", new MdExecutor),
+    Input(Markdown, "All Markup", "All-Markup.md", new MdExecutor),
+    Input(ReStructuredText, "reStructuredText Spec", "rst-spec.rst", new RstExecutor)
   )
 
   trait Executor {
@@ -26,29 +26,25 @@ object Main extends App {
 
   class MdExecutor extends Executor {
 
+    lazy val transform = Transform from (Markdown withVerbatimHTML).strict to HTML rendering VerbatimHTML
+
     override def execute (input: String): Unit =
-      Transform from (Markdown withVerbatimHTML).strict to HTML rendering VerbatimHTML fromString input toString
+      transform fromString input toString
 
 
   }
 
   class RstExecutor extends Executor {
 
+    lazy val transform = Transform from ReStructuredText to HTML
+
     override def execute (input: String): Unit =
-      Transform from ReStructuredText to HTML fromString input toString
+      transform fromString input toString
 
   }
 
-  val mdEngine = new MdExecutor
 
-  val rstEngine = new RstExecutor
-
-  val engines: Map[ParserFactory, Executor] = Map(
-    Markdown -> mdEngine,
-    ReStructuredText -> rstEngine
-  )
-
-  case class Input (parser: ParserFactory, description: String, file: String) {
+  case class Input (parser: ParserFactory, description: String, file: String, executor: Executor) {
 
     lazy val source = Source.fromFile(s"testDocs/$file").mkString
 
@@ -66,7 +62,13 @@ object Main extends App {
       println()
 
       Counter.reset()
-      engines(input.parser).execute(input.source)
+      input.executor.execute(input.source)
+      Counter.print()
+
+      println("2nd run:")
+      println()
+      Counter.reset()
+      input.executor.execute(input.source)
       Counter.print()
       println()
     }
