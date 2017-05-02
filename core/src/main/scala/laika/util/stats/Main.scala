@@ -15,6 +15,7 @@ object Main extends App {
   val inputs = Seq(
     Input(Markdown, "Markdown Spec - Syntax", "Markdown-Syntax.md", new MdExecutor),
     Input(Markdown, "All Markup", "All-Markup.md", new MdExecutor),
+    Input(Markdown, "Plain Text", "Plain-Text.md", new MdExecutor),
     Input(ReStructuredText, "reStructuredText Spec", "rst-spec.rst", new RstExecutor)
   )
 
